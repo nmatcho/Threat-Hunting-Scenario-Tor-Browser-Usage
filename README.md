@@ -13,11 +13,11 @@ Management suspects that some employees may be using TOR browsers to bypass netw
 
 ---
 
-## Steps Taken
+## In-Depth Analysis
 
 ### 1. Searched the `DeviceFileEvents` Table
 
-Searched DeviceFileEvents table for ANY File containing “Tor” on the employee in question’s workstation and account name. Confirmed the employee downloaded a tor browser, which generated many “tor” related files including one named “tor shopping list.txt” being copied to the Desktop. These events started at “2025-10-23T19:58:24.2461505Z”.
+I searched the DeviceFileEvents table for ANY File containing “Tor” on the employee in question’s workstation and account name. I confirmed the employee downloaded a Tor browser, which generated many “tor” related files including one named “tor shopping list.txt” being copied to the Desktop. I noted that these events started at “2025-10-23T19:58:24.2461505Z” (3:58PM 10/23/25).
 
 **Query used to locate events:**
 
@@ -30,24 +30,40 @@ DeviceFileEvents
 | order by Timestamp desc
 | project Timestamp, DeviceName, ActionType, FileName, FolderPath, SHA256, Account = InitiatingProcessAccountName
 ```
-<img width="1212" alt="image" src="https://github.com/user-attachments/assets/71402e84-8767-44f8-908c-1805be31122d">
+
+<img width="730" height="388" alt="image" src="https://github.com/user-attachments/assets/8c59cde8-8e0d-4d11-ae3c-73ad13422ab7" />
 
 ---
 
 ### 2. Searched the `DeviceProcessEvents` Table
 
-Searched for any `ProcessCommandLine` that contained the string "tor-browser-windows-x86_64-portable-14.0.1.exe". Based on the logs returned, at `2024-11-08T22:16:47.4484567Z`, an employee on the "threat-hunt-lab" device ran the file `tor-browser-windows-x86_64-portable-14.0.1.exe` from their Downloads folder, using a command that triggered a silent installation.
+I shifted to the DeviceProcessEvents table to find any commands being run at the same time and establish more evidence. I immediately discovered a silent install of “tor-browser-windows-x86_64-portable-14.5.8.exe” around 2025-10-23T20:00:47.0997688Z
 
 **Query used to locate event:**
 
 ```kql
-
-DeviceProcessEvents  
-| where DeviceName == "threat-hunt-lab"  
-| where ProcessCommandLine contains "tor-browser-windows-x86_64-portable-14.0.1.exe"  
-| project Timestamp, DeviceName, AccountName, ActionType, FileName, FolderPath, SHA256, ProcessCommandLine
+DeviceProcessEvents
+| where DeviceName == "OBFUSCATED"
+| where Timestamp >= datetime(2025-10-23T19:58:24.2461505Z)
+| project Timestamp, DeviceName, ActionType, FileName, FolderPath, SHA256, ProcessCommandLine
+| order by Timestamp asc
 ```
-<img width="1212" alt="image" src="https://github.com/user-attachments/assets/b07ac4b4-9cb3-4834-8fac-9f5f29709d78">
+
+<img width="584" height="457" alt="image" src="https://github.com/user-attachments/assets/770fd6ce-a9e0-4f58-b423-1cc80170f2ba" />
+
+As of right now I know the “Tor Browser” was installed and a suspicious text file “tor shopping list” was created, but I have no evidence of the employee launching the browser and using the company network to access the dark web. I dove deeper into the DeviceProcessEvents table to view what the commands following the silent install did. Immediately after the install I saw many firefox.exe instances. I wasn’t sure what to make of them. At first I assumed they were legitimate uses, but then I noticed the FolderPath for firefox is embedded in the Tor Browser directory.
+
+<img width="578" height="444" alt="image" src="https://github.com/user-attachments/assets/62adc2a6-283f-428f-9f8a-43603f04d81d" />
+
+The "ProcessCommandLine" section gives further evidence of the Tor Browser being launched on the company network with the commands highlighted in the following image:
+
+<img width="1114" height="459" alt="image" src="https://github.com/user-attachments/assets/f7e54105-5eba-49c0-9ac7-d4723f4866d8" />
+
+According to ChatGPT, the second command launches the Tor process using the specified configuration files and data directories. It sets up Tor's SOCKS proxy on port 9150 and control interface on port 9151, using local configuration files for routing, geoIP data, and authentication, but starts with the network initally disabled.
+
+```cmd
+"tor.exe" -f "C:\Users\OBFUSCATED\Desktop\Tor Browser\Browser\TorBrowser\Data\Tor\torrc" DataDirectory "C:\Users\OBFUSCATED\Desktop\Tor Browser\Browser\TorBrowser\Data\Tor" ClientOnionAuthDir "C:\Users\OBFUSCATED\Desktop\Tor Browser\Browser\TorBrowser\Data\Tor\onion-auth" --defaults-torrc "C:\Users\OBFUSCATED\Desktop\Tor Browser\Browser\TorBrowser\Data\Tor\torrc-defaults" GeoIPFile "C:\Users\OBFUSCATED\Desktop\Tor Browser\Browser\TorBrowser\Data\Tor\geoip" GeoIPv6File "C:\Users\OBFUSCATED\Desktop\Tor Browser\Browser\TorBrowser\Data\Tor\geoip6" +__ControlPort 127.0.0.1:9151 HashedControlPassword ********** +__SocksPort "127.0.0.1:9150 ExtendedErrors IPv6Traffic PreferIPv6 KeepAliveIsolateSOCKSAuth" __OwningControllerProcess 1020 DisableNetwork 1
+```
 
 ---
 
@@ -70,7 +86,7 @@ DeviceProcessEvents
 
 ### 4. Searched the `DeviceNetworkEvents` Table for TOR Network Connections
 
-Searched for any indication the TOR browser was used to establish a connection using any of the known TOR ports. At `2024-11-08T22:18:01.1246358Z`, an employee on the "threat-hunt-lab" device successfully established a connection to the remote IP address `176.198.159.33` on port `9001`. The connection was initiated by the process `tor.exe`, located in the folder `c:\users\employee\desktop\tor browser\browser\torbrowser\tor\tor.exe`. There were a couple of other connections to sites over port `443`.
+With this information I now know that evidence for network use will be on ports 9150 and 9151. I then shifted to the DeviceNetworkEvents table to find further confirmation of this.
 
 **Query used to locate events:**
 
@@ -136,14 +152,14 @@ DeviceNetworkEvents
 
 ---
 
-## Summary
-
-The user "employee" on the "threat-hunt-lab" device initiated and completed the installation of the TOR browser. They proceeded to launch the browser, establish connections within the TOR network, and created various files related to TOR on their desktop, including a file named `tor-shopping-list.txt`. This sequence of activities indicates that the user actively installed, configured, and used the TOR browser, likely for anonymous browsing purposes, with possible documentation in the form of the "shopping list" file.
-
----
-
 ## Response Taken
 
 TOR usage was confirmed on the endpoint `threat-hunt-lab` by the user `employee`. The device was isolated, and the user's direct manager was notified.
+
+---
+
+## Executive Summary of Events
+
+Management suspected an employee of using the Tor Browser to bypass network controls after unusual encrypted traffic was detected. Investigation confirmed that the Tor Browser was silently installed on the workstation, evidenced by installation artifacts and a suspicious file on the Desktop. Process logs showed the browser and Tor processes were launched, and network logs confirmed both local communication on Tor’s SOCKS/control ports and subsequent outbound connections to external IPs, demonstrating active use of the Tor network. While the specific websites visited could not be determined, the findings clearly indicate unauthorized Tor usage on the company network. The device was isolated and the user’s direct manager was notified.
 
 ---
