@@ -1,5 +1,5 @@
 # Threat Hunt Report: Unauthorized TOR Usage
-[[Scenario Creation][(https://github.com/nmatcho/Threat-Hunting-Scenario-Tor-Browser-Usage-/blob/main/threat-hunting-scenario-tor-event-creation.md)]
+[Scenario Creation][(https://github.com/nmatcho/Threat-Hunting-Scenario-Tor-Browser-Usage-/blob/main/threat-hunting-scenario-tor-event-creation.md)]
 
 ## Platforms and Languages Leveraged
 - Windows 11 Virtual Machine (Microsoft Azure)
