@@ -69,7 +69,7 @@ DeviceProcessEvents
 
 ### 3. Searched the `DeviceNetworkEvents` Table for External TOR Network Connections
 
-- With this information I now know that evidence for network use will be on ports 9150 and 9151. I then shifted to the DeviceNetworkEvents table to find further confirmation of this.
+- With this information I now know that evidence for network traffic will be on ports 9150 and 9151. I then shifted to the DeviceNetworkEvents table to find confirmation of this.
 
 **Query used to locate events:**
 
@@ -83,7 +83,7 @@ DeviceNetworkEvents
 
 <img width="1149" height="103" alt="image" src="https://github.com/user-attachments/assets/6bb8cc98-1da6-41d0-a85a-7a4a410f27b0" />
 
-- The resulting query was a "ConnectionSuccess" ActionType to each port, confirming the Tor Browser was launched. However, this evidence doesn't yet confirm EXTERNAL connection on the company network because it was using the LOCAL loopback address confirmed inthe RemoteIP section (127.0.0.1). I then began to hunt for possible outbound connections to RemoteIPs following the successful loopback connections. I also made sure to include the same InitiatingProcessCommandLine to confirm they were outbound connections using the Tor Browser.
+- The resulting query was a "ConnectionSuccess" ActionType to each port, confirming the Tor Browser was launched. However, this evidence doesn't yet confirm EXTERNAL connection on the company network because it was using the LOCAL loopback address confirmed in the RemoteIP section (127.0.0.1). I then began to hunt for possible outbound connections to RemoteIPs following the successful loopback connections. I also made sure to include the same InitiatingProcessCommandLine to confirm they were outbound connections using the Tor Browser.
 
 **Query used to locate events:**
 
@@ -103,73 +103,71 @@ DeviceNetworkEvents
 
 ---
 
-## Chronological Event Timeline 
+## Response Taken
 
-### 1. File Download - TOR Download
-
-- **Timestamp:** '2025-10-23T19:56:47.7628049Z`
-- **Event:** The user "OBFUSCATED" downloaded a file named `tor-browser-windows-x86_64-portable-14.0.1.exe` to the Downloads folder.
-- **Action:** File download detected.
-- **File Path:** `C:\Users\OBFUSCATED\Downloads\tor-browser-windows-x86_64-portable-14.5.8.exe`
-
-### 2. Process Execution - TOR Installation
-
-- **Timestamp:** '2025-10-23T19:59:46.8619451Z`
-- **Event:** The user "OBFUSCATED" silently installed the executable 'tor-browser-windows-x86_64-portable-14.0.1.exe' using the '/s' command.
-- **Action:** File installation command detected.
-- **Command Executed:** `tor-browser-windows-x86_64-portable-14.5.8.exe /S`
-
-### 2. File Installation - TOR Installation
-
-- **Timestamp:** '2025-10-23T20:00:03.3275435Z`
-- **Event:** The previously mentioned file installed by the user "OBFUSCATED" was saved to the Desktop as "Tor-Launcher.txt".
-- **Action:** File installation detected.
-- **File Path:** `C:\Users\OBFUSCATED\Desktop\Tor Browser\Browser\TorBrowser\Docs\Licenses\Tor-Launcher.txt`
-
-
-
-### 2. Suspicious File Created - TOR Shopping List
-
-- **Timestamp:** `2025-10-23T20:20:05.1919289Z`
-- **Event:** The user "OBFUSCATED" create a .txt file named "Tor shopping list.txt" and saved it to the Desktop.
-- **Action:** Suspicious File Detected.
-- **File Path:** `C:\Users\labuser\Desktop\Tor Browser\Browser\TorBrowser\Docs\Licenses\Tor-Launcher.txt`  
-
-### 2. Process Execution - TOR Browser Launch
-
-- **Timestamp:** `2024-11-08T22:17:21.6357935Z`
-- **Event:** User "employee" opened the TOR browser. Subsequent processes associated with TOR browser, such as `firefox.exe` and `tor.exe`, were also created, indicating that the browser launched successfully.
-- **Action:** Process creation of TOR browser-related executables detected.
-- **File Path:** `C:\Users\employee\Desktop\Tor Browser\Browser\TorBrowser\Tor\tor.exe`
-
-### 3. Network Connection - TOR Network
-
-- **Timestamp:** `2024-11-08T22:18:01.1246358Z`
-- **Event:** A network connection to IP `176.198.159.33` on port `9001` by user "employee" was established using `tor.exe`, confirming TOR browser network activity.
-- **Action:** Connection success.
-- **Process:** `tor.exe`
-- **File Path:** `c:\users\employee\desktop\tor browser\browser\torbrowser\tor\tor.exe`
-
-### 5. Additional Network Connections - TOR Browser Activity
-
-- **Timestamps:**
-  - `2024-11-08T22:18:08Z` - Connected to `194.164.169.85` on port `443`.
-  - `2024-11-08T22:18:16Z` - Local connection to `127.0.0.1` on port `9150`.
-- **Event:** Additional TOR network connections were established, indicating ongoing activity by user "employee" through the TOR browser.
-- **Action:** Multiple successful connections detected.
-
-### 6. File Creation - TOR Shopping List
-
-- **Timestamp:** `2024-11-08T22:27:19.7259964Z`
-- **Event:** The user "employee" created a file named `tor-shopping-list.txt` on the desktop, potentially indicating a list or notes related to their TOR browser activities.
-- **Action:** File creation detected.
-- **File Path:** `C:\Users\employee\Desktop\tor-shopping-list.txt`
+- TOR usage was confirmed on the endpoint "OBFUSCATED" by the user "OBFUSCATED". The device was isolated, and the user's direct manager was notified.
 
 ---
 
-## Response Taken
+## Chronological Event Timeline 
 
-- TOR usage was confirmed on the endpoint `threat-hunt-lab` by the user `employee`. The device was isolated, and the user's direct manager was notified.
+### 1. File Download - TOR Browser Download
+
+- **Timestamp:** '2025-10-23T19:56:47.7628049Z` 3:56PM EST 10/23/25
+- **Event:** The user "OBFUSCATED" downloaded a file named "tor-browser-windows-x86_64-portable-14.0.1.exe" to the Downloads folder.
+- **Action:** File download detected.
+- **File Path:** C:\Users\OBFUSCATED\Downloads\tor-browser-windows-x86_64-portable-14.5.8.exe
+
+### 2. Process Execution - TOR Browser Installation
+
+- **Timestamp:** '2025-10-23T19:59:46.8619451Z` 3:59PM EST 10/23/25
+- **Event:** The user "OBFUSCATED" silently installed the executable "tor-browser-windows-x86_64-portable-14.0.1.exe' using the /s" command.
+- **Action:** File installation command detected.
+- **Command Executed:** tor-browser-windows-x86_64-portable-14.5.8.exe /S
+
+### 3. File Installation - TOR Browser Installation
+
+- **Timestamp:** '2025-10-23T20:00:03.3275435Z` 4:00PM EST 10/23/25
+- **Event:** The previously mentioned file installed by the user "OBFUSCATED" was saved to the Desktop as "Tor-Launcher.txt".
+- **Action:** File installation detected.
+- **File Path:** C:\Users\OBFUSCATED\Desktop\Tor Browser\Browser\TorBrowser\Docs\Licenses\Tor-Launcher.txt
+
+### 4. Process Execution - TOR Browser Launch
+
+- **Timestamp:** `2025-10-23T20:00:47.0997688Z` 4:00PM EST 10/23/25
+- **Event:** The user "OBFUSCATED" launched the TOR browser. Discovered by review of "firefox.exe" and "ProcessCommandLine" instances.
+- **Action:** Process creation of TOR browser-related executables detected.
+- **File Path:** C:\Users\OBFUSCATED\Desktop\Tor Browser\Browser\firefox.exe
+
+### 5. Network Connection - Internal TOR Network Connections
+
+- **Timestamp:** `2025-10-23T20:00:54.0914535Z` 4:00PM EST 10/23/25
+- **Event:** Further confirmation the user "OBFUSCATED" launching the Tor Browser evidenced by connections over common TOR ports 9150 and 9151 to the loopback address.
+- **Action:** Connection success.
+- **RemoteIPs:** 127.0.0.1
+- **RemotePorts:** 9150 and 9151
+
+### 6. Network Connection - External TOR Network Connections
+
+- **Timestamp:** `2025-10-23T20:00:59.0185706Z` 4:01PM EST 10/23/25
+- **Event:** Confirmed the Tor Browser accessed websites using the Tor Browser over port 443 and 8080.
+- **Action:** Connection success.
+- **RemoteIPs:** 162.55.48.243, 94.23.247.42, 188.165.4.146
+- **RemotePorts:** 443 and 8080
+
+### 7. Suspicious File Created - TOR Shopping List
+
+- **Timestamp:** `2025-10-23T20:20:05.1919289Z` 4:20PM EST 10/23/25
+- **Event:** The user "OBFUSCATED" create a .txt file named "Tor shopping list.txt" and saved it to the Desktop.
+- **Action:** Suspicious File Detected.
+- **File Path:** C:\Users\labuser\Desktop\Tor Browser\Browser\TorBrowser\Docs\Licenses\Tor-Launcher.txt 
+
+### 8. File Deleted - Tor Browser
+
+- **Timestamp:** `2025-10-23T20:20:58.9451151Z` 4:21PM EST 10/23/25
+- **Event:** The user "OBFUSCATED" deleted the file named "tor.exe" from the Desktop.
+- **Action:** Suspicious File Deleted.
+- **File Path:** C:\Users\labuser\Desktop\Tor Browser\Browser\TorBrowser\Docs\Licenses\Tor-Launcher.txt
 
 ---
 
